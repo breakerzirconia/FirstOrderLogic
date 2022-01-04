@@ -42,8 +42,14 @@ main = runInputT defaultSettings loop
                 outputStrLn "What's its new identifier?"
                 new <- lift getLine
                 lift . print $ renameBound old new fol
+              "rename-free" -> do
+                outputStrLn "What variable to rename?"
+                old <- lift getLine
+                outputStrLn "What's its new identifier?"
+                new <- lift getLine
+                lift . print $ renameFree old new fol
               _       -> outputStrLn "Not one of the reserved words."
           goReserved s
 
     reserved :: [String]
-    reserved = ["free", "bound", "rename-bound"]
+    reserved = ["free", "bound", "rename-bound", "rename-free"]

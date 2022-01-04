@@ -22,6 +22,28 @@ free = \case
       Var s -> S.singleton s
       Function s tes -> S.unions $ free' <$> tes
 
+renameFree :: String -> String -> FOL -> FOL
+renameFree old new = \case
+  T -> T
+  F -> F
+  Not fol -> Not $ renameFree old new fol
+  lhs :& rhs -> renameFree old new lhs :& renameFree old new rhs
+  lhs :| rhs -> renameFree old new lhs :| renameFree old new rhs
+  lhs :> rhs -> renameFree old new lhs :> renameFree old new rhs
+  Forall s fol -> if s == old
+                  then Forall s fol
+                  else Forall s $ renameFree old new fol
+  Exists s fol -> if s == old
+                  then Exists s fol
+                  else Forall s $ renameFree old new fol
+  Predicate s tes -> Predicate s $ renameFree' old new <$> tes
+  where
+    renameFree' :: String -> String -> Term -> Term
+    renameFree' old new = \case
+      Constant s -> Constant s
+      Var s -> Var $ if s == old then new else s
+      Function s tes -> Function s $ renameFree' old new <$> tes
+
 bound :: FOL -> S.Set String
 bound = \case
   T -> S.empty
@@ -67,7 +89,6 @@ renameBound old new = \case
       Constant s -> Constant s
       Var s -> Var $ if s == old then new else s
       Function s tes -> Function s $ go' old new <$> tes
-
 
 constants :: FOL -> S.Set String
 constants = \case
