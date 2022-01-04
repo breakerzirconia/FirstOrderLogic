@@ -1,5 +1,9 @@
 module FOL.Base where
 
+infixl 3 :&
+infixl 2 :|
+infixl 1 :>
+
 data FOL
   = T
   | F
