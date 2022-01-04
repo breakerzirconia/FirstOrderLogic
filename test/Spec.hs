@@ -7,25 +7,28 @@ import           FOL.Parser
 import           FOL.Util
 
 testTerminalCollectors :: String -> String -> [String] -> Spec
-testTerminalCollectors f s l =
+testTerminalCollectors mode s l =
   let fol = fromRight (error $ "Parsing of " <> s <> " failed.") $ parse s
   in
-    it (f <> " " <> show fol <> " should be " <> show l) $
-      (case f of
+    it (mode <> " " <> show fol <> " should be " <> show l) $
+      (case mode of
         "free"   -> free
         "bound"  -> bound
         "consts" -> constants
         "vars"   -> variables
         _        -> undefined) fol `shouldBe` S.fromList l
 
-testRenaming :: String -> String -> String -> String -> Spec
-testRenaming old new toRename expected =
+testRenaming :: String -> String -> String -> String -> String -> Spec
+testRenaming mode old new toRename expected =
   let fol = fromRight (error $ "Parsing of " <> toRename <> " failed.") $ parse toRename
       fol' = fromRight (error $ "Parsing of " <> expected <> " failed.") $ parse expected
   in
     it ("After renaming the bound variable `" <> old <> "` to `" <> new <> "` in " <> show fol <>
         " we should get " <> show fol') $ do
-      renameBound old new fol `shouldBe` fol'
+      (case mode of
+        "bound" -> renameBound
+        "free"  -> renameFree
+        _       -> undefined) old new fol `shouldBe` fol'
 
 main :: IO ()
 main = hspec $ do
@@ -56,8 +59,22 @@ main = hspec $ do
       \ @ :x . Between(_0, sub(:x, :p), :delta) -> Between(_0, sub(f(:x), :L), :eps)"
         ["eps", "delta", "x", "p", "L"]
   describe "Bound variable renaming" $ do
-    testRenaming "x" "x'" "@ :x . Eq(:x, :x)" "@ :x' . Eq(:x', :x')"
-    testRenaming "x" "x'" "@ :y . Eq(:x, :y)" "@ :y . Eq(:x, :y)"
-    testRenaming "x" "x'"
+    testRenaming "bound" "x" "x'"
+      "@ :x . Eq(:x, :x)"
+      "@ :x' . Eq(:x', :x')"
+    testRenaming "bound" "x" "x'"
+      "@ :y . Eq(:x, :y)"
+      "@ :y . Eq(:x, :y)"
+    testRenaming "bound" "x" "x'"
       "(@ :x . Eq(:y, :x)) -> (@ :y . Eq(:x, :y))"
       "(@ :x' . Eq(:y, :x')) -> (@ :y . Eq(:x, :y))"
+  describe "Free variable renaming" $ do
+    testRenaming "free" "x" "x'"
+      "@ :x . Eq(:x, :x)"
+      "@ :x . Eq(:x, :x)"
+    testRenaming "free" "x" "x'"
+      "@ :y . Eq(:x, :y)"
+      "@ :y . Eq(:x', :y)"
+    testRenaming "free" "x" "x'"
+      "(@ :x . Eq(:y, :x)) -> (@ :y . Eq(:x, :y))"
+      "(@ :x . Eq(:y, :x)) -> (@ :y . Eq(:x', :y))"
