@@ -1,0 +1,63 @@
+name:                FirstOrderLogic
+version:             0.1.0.0
+github:              breakerzirconia/FirstOrderLogic
+license:             BSD3
+author:              Constantine Ter-Matevosian
+maintainer:          terkot1010@gmail.com
+copyright:           2022 Constantine Ter-Matevosian
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/breakerzirconia/FirstOrderLogic#readme>
+
+default-extensions:
+- LambdaCase
+- OverloadedStrings
+- TypeOperators
+- TypeApplications
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- containers
+- haskeline
+- megaparsec
+- mtl
+- parser-combinators
+- text
+- transformers
+
+library:
+  source-dirs: src
+
+executables:
+  FirstOrderLogic-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - FirstOrderLogic
+
+tests:
+  FirstOrderLogic-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - FirstOrderLogic
+    - hspec
